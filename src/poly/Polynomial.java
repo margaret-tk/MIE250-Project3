@@ -1,7 +1,12 @@
 package poly;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeSet;
 
 import util.Vector;
@@ -15,6 +20,7 @@ import util.Vector;
 public class Polynomial {
 
 	private ArrayList<Term> _terms; // The Polynomial is the sum of these Terms
+	
 
 	/** This constructor has been implemented for you.  It simply initializes an
 	 *  empty term list.
@@ -22,6 +28,10 @@ public class Polynomial {
 	 */
 	public Polynomial() {
 		_terms = new ArrayList<Term>();
+	}
+	
+	public ArrayList<Term> getTerms() {
+		return _terms;
 	}
 	
 	/** This constructor has been implemented for you -- it parses a term 
@@ -56,6 +66,10 @@ public class Polynomial {
 		return sb.toString();
 	}
 	
+	public void addTerm(Term dt) {
+		_terms.add(dt);
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////
 	// TODO: Your methods here!  You should add some helper methods that facilitate
 	//       the implementation of the methods below.
@@ -71,10 +85,11 @@ public class Polynomial {
 	 * @return
 	 * @throws PolyException if there were any errors reading or parsing the file
 	 */
-	public static Polynomial ReadPolynomial(File file) throws PolyException {
-
-		// TODO: Should not return null!
-		return null;
+	public static Polynomial ReadPolynomial(File file) throws PolyException , FileNotFoundException, IOException {
+		BufferedReader  br = new  BufferedReader(new FileReader(file));
+		Polynomial myPoly = new Polynomial(br.readLine());
+		br.close();
+		return myPoly;
 	}
 	
 	/** Returns all of the variables used in this Polynomial as a sorted set (TreeSet).
@@ -82,9 +97,13 @@ public class Polynomial {
 	 * @return (TreeSet of Strings as defined above)
 	 */
 	public TreeSet<String> getAllVars() {
-
-		// TODO: Should not return null!
-		return null;
+		TreeSet<String> tree = new TreeSet<String>();
+		for(Term each: _terms) {
+			for(String i : each.getVars()) {
+				tree.add(i);
+			}	
+		}
+		return tree;	
 	}
 	
 	/** If Polynomial defines f(x,y) = 2xy^2 + xy and assignments is { x=2.0 y=3.0 } 
@@ -98,10 +117,17 @@ public class Polynomial {
 	 * (can throw either a VectorException or a PolyException -- Exception is a superclass)
 	 */
 	public double evaluate(Vector assignments) throws Exception {
-
-		// TODO: Should not return 0!
-		return 0;
+		try {
+		double evaluate = 0.0;
+		for(Term each: _terms) {
+			evaluate += each.evaluate(assignments);
+		}
+		return evaluate;
+		} catch (Exception e) {
+			throw new PolyException("Exception thrown");
+		}
 	}
+	
 
 	/** If Polynomial defines a function f(.) then this method returns the **symbolic**
 	 *  partial derivative (which you can verify from calculus is still a Polynomial):
@@ -115,10 +141,13 @@ public class Polynomial {
 	 * @param var
 	 * @return partial derivative of this w.r.t. var as a new Term
 	 */
-	public Polynomial differentiate(String var) {
-
-		// TODO: Should not return null!
-		return null;
+	public Polynomial differentiate(String var)  {
+		Polynomial myPoly = new Polynomial();
+		for (Term each : _terms) {
+			Term dt = each.differentiate(var);
+			if(dt.getCoef() != 0.0d) myPoly.addTerm(dt);
+		}
+		return myPoly;
 	}
 
 	/** Some examples testing the Polynomial and Term classes with expected output.
@@ -136,6 +165,7 @@ public class Polynomial {
 		Polynomial p  = new Polynomial("x^2 + y^2 + -4*x*y + 8");
 		Polynomial p2 = new Polynomial(p.toString()); // See if we can reparse p.toString()
 		Polynomial dp_dx = p.differentiate("x");
+		//System.out.println("This is dp_dx" + dp_dx);
 		Polynomial dp_dy = p.differentiate("y");
 
 		// Build a point vector (HashMap) of numerical assignments for variables

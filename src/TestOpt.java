@@ -2,6 +2,7 @@ import java.io.File;
 
 import opt.Minimizer;
 import poly.Polynomial;
+import poly.Term;
 import util.Vector;
 
 /** This is a small example of test cases.  To test correctness of your implementation,  
@@ -14,9 +15,18 @@ import util.Vector;
 public class TestOpt {
 
 	public static void main(String[] args) throws Exception {
+		
+		
 		// You must run more test cases than this!
 		RunMinimizer("files/poly1.txt", 0.001, 200, 0.10, "{ x=1.0 }");
 		RunMinimizer("files/poly2.txt", 0.001, 200, 0.10, "{ x=1.0 y=1.0 }");
+		
+		//Term x = new Term("2*y*x^2");
+		//Vector v = new Vector("{ x=2.0 y=3.0 }");
+		//System.out.print(x);
+		//System.out.println("testing evaluate " + x.evaluate(v));
+		//System.out.println("testing differentiate " + x.differentiate("x"));
+		
 	}	
 
 	public static void RunMinimizer(String polyfile, double eps, int max_iter, double alpha, String sx0) 

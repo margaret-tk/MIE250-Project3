@@ -1,8 +1,10 @@
 import java.io.File;
 
+import soln.poly.Term;
 import soln.opt.Minimizer;
 import soln.poly.Polynomial;
 import soln.util.Vector;
+import soln.util.VectorException;
 
 /** This is a small example of test cases.  To test correctness of your implementation,  
  *  see if the output on your tests matches in TestOpt match the results of the same tests 
@@ -14,11 +16,21 @@ import soln.util.Vector;
 public class TestOptSoln {
 
 	public static void main(String[] args) throws Exception {
+		
+
 		// You must run more test cases than this!
 		RunMinimizer("files/poly1.txt", 0.001, 200, 0.10, "{ x=1.0 }");
 		RunMinimizer("files/poly2.txt", 0.001, 200, 0.10, "{ x=1.0 y=1.0 }");
+		;
+		
+		//Term x = new Term("2*y^1*x^2");
+		//Vector v = new Vector("{ x=2.0 y=3.0 z }");
+		//System.out.print(x);
+		//System.out.println("testing evaluate " + x.evaluate(v));
+		//System.out.println("testing differentiate " + x.differentiate("z"));
 	}	
-
+	
+	
 	public static void RunMinimizer(String polyfile, double eps, int max_iter, double alpha, String sx0) 
 			throws Exception {
 		
@@ -42,3 +54,5 @@ public class TestOptSoln {
 		m.printResults(System.out);
 	}
 }
+
+

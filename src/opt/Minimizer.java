@@ -4,7 +4,9 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.TreeSet;
 
+import poly.PolyException;
 import poly.Polynomial;
+import poly.Term;
 import util.Vector;
 
 /** The main optimization package: see project handout for functionality and definitions
@@ -18,8 +20,8 @@ public class Minimizer {
 	private double _eps;			// tolerance
 	private int    _maxIter;		// maximum number of iterations
 	private double _stepSize;		// step size alpha
-	private Vector _x0;	   		// starting point
-	private Vector _lastx; 		// last point found
+	private Vector _x0;	   			// starting point
+	private Vector _lastx; 			// last point found
 	private double _lastObjVal;		// last obj fn value found
 	private double _lastGradNorm;   // last gradient norm found
 	private long _compTime;			// computation time needed
@@ -63,6 +65,21 @@ public class Minimizer {
 		_x0.setAll(x0);
 	}
 	
+	
+	//method that creates gradient hashmap (un-evaluated)
+	public HashMap<String,Polynomial> getGradient(Polynomial p)  {
+	
+		TreeSet<String> pAllVars = new TreeSet<String>(p.getAllVars()); 
+		_var2gradp = new HashMap<String, Polynomial>();
+		for(String each: pAllVars ) {
+			 
+			_var2gradp.put(each, p.differentiate(each));
+		}
+		return _var2gradp;
+	}
+	
+	
+	
 	///////////////////////////////////////////////////////////////////////////////
 	// TODO: Your methods here!  You should add some helper methods that facilitate
 	//       the implementation of the methods below.
@@ -74,9 +91,10 @@ public class Minimizer {
 	 * @throws Exception
 	 */
 	public void minimize(Polynomial p) throws Exception {
-			
-		// TODO: Build the partial derivatives of p for all variables in p
 		
+		// TODO: Build the partial derivatives of p for all variables in p
+		getGradient(p);
+	
 		// Start the gradient descent
 		_nIter = 0;
 		long start = System.currentTimeMillis();
@@ -85,7 +103,6 @@ public class Minimizer {
 		_lastx.clear();
 		_lastx.setAll(_x0);
 		_lastObjVal = p.evaluate(_x0);
-		
 		_lastGradNorm = Double.MAX_VALUE;
 		
 		// TODO: Main descent loop
@@ -97,10 +114,40 @@ public class Minimizer {
 		//	  print iteration number, new point, objective at new point, i.e.
 		//      System.out.format("At iteration %d: %s objective value = %.3f\n", _nIter, _lastx, _lastObjVal);
 		//	}
+		
+		while ( _nIter < _maxIter && _lastGradNorm >= _eps ) {
+			_nIter++;
 			
+			Vector grad = new Vector(); //evaluated gradient 
+			
+			_lastGradNorm = 0;
+			
+			//fill evaluated gradient vector hashmap<string, double>
+			for(String each:  _var2gradp.keySet()) {
+				grad.set(each,  _var2gradp.get(each).evaluate(_lastx));
+			}
+			
+			//calculating the evaluated gradient norm 
+			for (String each: grad.seeVector().keySet()) {
+				_lastGradNorm += Math.pow(grad.getVal(each), 2.00);
+			}
+			_lastGradNorm = Math.sqrt(_lastGradNorm);
+	
+			//finding new point
+			_lastx = _lastx.sum(grad.scalarMult(-1* _stepSize));
+			
+			//new obj value 
+			_lastObjVal = p.evaluate(_lastx);
+			
+			//print out current status 
+			System.out.format("At iteration %d: %s objective value = %.3f\n", _nIter, _lastx, _lastObjVal);
+
+		}
+		
 		// Record the end time
-		_compTime = System.currentTimeMillis()-start;
+		_compTime = System.currentTimeMillis()-start; 
 	}
+	
 	
 	/** Print minimization result details
 	 * 
@@ -139,6 +186,7 @@ public class Minimizer {
 		// Assign starting point {x=1.0}
 		Vector x0 = new Vector();
 		x0.set("x", 1.0);
+		//x0.set("y", 2.0);
 
 		// Initialize polynomial and minimizer
 		Polynomial p = new Polynomial("10*x^2 + -40*x + 40");
@@ -160,7 +208,7 @@ public class Minimizer {
 		// ===============================================
 		
 		// [Optional] View the cached gradient expressions if you've cached them
-		// for (String var : p.getAllVars())
-		//	  System.out.println("Gradient of " + var + " is " + m._var2gradp.get(var));
+		for (String var : p.getAllVars())
+			  System.out.println("Gradient of " + var + " is " + m._var2gradp.get(var));
 	}
 }

@@ -1,9 +1,16 @@
 package poly;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeSet;
 
 import util.Vector;
+
+import java.lang.Math;
+
+
+
+
 
 /** Implements an individual term in a polynomial.  If 5x^2 + 3xy is a polynomial,
  *  it has two terms 5x^2 and 2xy, each of which would be represented by a different
@@ -18,7 +25,10 @@ public class Term {
 	private double _coef; // = 2.1
 	private ArrayList<String>  _vars; // = ["x", "y", "z"]
 	private ArrayList<Integer> _pows; // = [4, 1, 2]
+	//private Vector _vector = new Vector();
 
+	
+	
 	/** This constructor has been implemented for you.
 	 * 
 	 * @param coef -- sets the _coef member
@@ -29,6 +39,20 @@ public class Term {
 		_pows = new ArrayList<Integer>();
 	}
 	
+	
+	public ArrayList<String> getVars() {
+		return _vars;
+	}
+	
+	public ArrayList<Integer> getPows(){
+		return _pows;
+		
+	}
+	
+	public double getCoef() {
+		return _coef;
+	}
+	
 	/** This constructor has been implemented for you -- it parses a term 
 	 *  representation from a String into the format required by this class.
 	 *  You need to understand the following code.
@@ -37,7 +61,7 @@ public class Term {
 	 * @throws PolyException if s is malformed
 	 */
 	public Term(String s) throws PolyException {
-		
+
 		if (s == null || s.trim().equals(""))
 			throw new PolyException("Empty Term, cannot read");
 		
@@ -105,12 +129,27 @@ public class Term {
 		// a little less efficient than HashSets, but this won't matter for our sizes).
 		return new TreeSet<String>(_vars);
 	}
+	
+	
 		
 	///////////////////////////////////////////////////////////////////////////////
 	// TODO: Your methods here!  You should add some helper methods that facilitate
 	//       the implementation of the methods below.
 	///////////////////////////////////////////////////////////////////////////////
 
+	public HashMap<String, Integer> getTermHM(){
+		HashMap<String, Integer> hashmap = new HashMap<String, Integer>();
+		for (int i = 0 ; i < _vars.size() ; i ++) {
+			String var = _vars.get(i);
+			int pow = _pows.get(i);
+			hashmap.put(var, pow);
+		}
+		return hashmap;
+	}
+	
+	
+	
+	
 	/** If Term defines a function f(x,y) = 2xy^2 and assignments is { x=2.0 y=3.0 } 
 	 *  then this method returns 36.0, which is the evaluation of f(2.0,3.0). 
 	 * 
@@ -118,11 +157,25 @@ public class Term {
 	 * @return
 	 * @throws PolyException
 	 */
-	public double evaluate(Vector assignments) throws PolyException {
-
-		// TODO: Should not return 0!
-		return 0;
+	
+	public double evaluate(Vector assignments) throws PolyException { //throw exception if vector doesn't contain a variable that appears in term. 
+		try {
+		HashMap<String,Double> vector = new HashMap<String,Double>(assignments.seeVector()); //putting assignments into a public hashmap 
+		
+		double evaluated = 1.00; //initiate double to 1 (not zero) 
+		
+		for (int i = 0; i<_vars.size(); i ++) { //iterate and evaluate 
+			evaluated *= Math.pow(vector.get(_vars.get(i)), _pows.get(i) );	
+		}
+		evaluated *= _coef; //multipply in the coef to end result 
+		return evaluated;	
+	
+		} catch (Exception e) {
+			throw new PolyException("This is a PolyException");
+		}
 	}
+		
+	
 
 	/** If Term defines a function f(.) then this method returns the **symbolic**
 	 *  partial derivative (which you can verify from calculus is still a Term):
@@ -136,9 +189,48 @@ public class Term {
 	 * @param var
 	 * @return partial derivative of this w.r.t. var as a new Term
 	 */
-	public Term differentiate(String var) {
+	public Term differentiate(String var) { 
 
-		// TODO: Should not return null!
-		return null;
+		ArrayList<String> newVars = new ArrayList<String>();
+		ArrayList<Integer> newPows = new ArrayList<Integer>();
+		
+		HashMap<String, Integer> terms = new HashMap<String, Integer>(this.getTermHM());
+		Term diff = new Term(0.0);
+		
+		if(terms.containsKey(var)== false) {
+			//Term = diff
+		}
+		
+		else {
+			double newCoef = _coef * terms.get(var);
+		
+			if(terms.get(var) == 1) { //IF TERM DOESN'T CONTAIN VAR, term == 0;  
+				terms.remove(var);
+			}
+			else terms.put(var, terms.get(var) - 1); //replaces variable power by power - 1
+		
+			for(String each: terms.keySet()) { //fill arraylists 
+				newVars.add(each);
+				newPows.add(terms.get(each));
+			}
+		
+			diff = new Term(newCoef); //create new diff 
+			diff._vars = newVars;
+			diff._pows = newPows;
+			}
+		
+		return diff;
 	}
+
+
+
+public static void main(String[] args) throws Exception {
+
+	Term m = new Term("2*x*y*z^3");
+	Vector v = new Vector("{ y=1 z=2 x=3 }"); 
+	System.out.println("testing evaluate " + m.evaluate(v));
+
+	System.out.print("testing differentiate " + m.differentiate("z"));
+}
+
 }
